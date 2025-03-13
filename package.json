@@ -1,7 +1,7 @@
 {
-    "name": "keepa-price-tracker",
+    "name": "Amazon-Seller-Analyser-Bot",
     "version": "1.0.0",
-    "description": "A Keepa price tracker that reads ASINs from an Excel file and sends email alerts for price drops.",
+    "description": "Amazon Seller Analyser Bot",
     "main": "index.js",
     "type": "module",
     "scripts": {
