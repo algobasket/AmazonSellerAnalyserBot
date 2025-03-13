@@ -2,7 +2,7 @@
     "name": "Amazon-Seller-Analyser-Bot",
     "version": "1.0.0",
     "description": "Amazon Seller Analyser Bot",
-    "main": "index.js",
+    "main": "run.mjs", 
     "type": "module",
     "scripts": {
         "start": "node run.mjs"  
