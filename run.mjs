@@ -200,7 +200,7 @@ const sendEmail = async () => {
 
 
 (async () => {
-    const asins = loadASINs('ASINs1.xlsx');
+    const asins = loadASINs('ASINs.xlsx');
     const existingData = loadExistingData('output.xlsx');
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
