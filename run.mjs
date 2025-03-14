@@ -1,20 +1,23 @@
 import puppeteer from 'puppeteer';
 import XLSX from 'xlsx';
 import fs from 'fs';
-import nodemailer from 'nodemailer'; // Import Nodemailer for email
+import nodemailer from 'nodemailer'; 
+
+import { getAllAsins,isAlertEmailSent,changeEmailSentStatus,insertProduct } from './functions.mjs';      
 
 const allowedSellers = ["Amber Worldwide", "Awwe Sales"];
-const unapprovedASINs = []; // Store ASINs with unapproved sellers 
+const unapprovedASINs = []; 
 const to_email = [
     "bikash.m@amberww.com",
-    "sanjay@amberwworldwide.com",
+    "sanjay@amberwworldwide.com", 
     "pricing@amberwworldwide.com",
     "chris.j@amberww.com",
-    "chirag@amberwworldwide.com"
-]; 
-const gmailAppUser = "algobasket@gmail.com";
-const gmailAppPass = "";
-
+    "chirag@amberwworldwide.com",
+    "goldenbeast256@gmail.com" 
+];
+const gmailAppUser = "info@amberww.com"; 
+const gmailAppPass = "okvr rqzz vwbi nqjv";       
+const limit = 12;                 
 
 const loadASINs = (file) => {
     const workbook = XLSX.readFile(file);
@@ -42,16 +45,22 @@ const loadExistingData = (file) => {
     }, {});
 };
 
+
+
 const scrapeAmazonProduct = async (asin, page) => {
     const url = `https://www.amazon.in/dp/${asin}`;
-    console.log(`Scraping ASIN: ${asin} - ${url}`);
+    console.log(`Scraping ASIN: ${asin} - ${url}`); 
 
     try {
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
         const productData = await page.evaluate((allowedSellers) => {
             const title = document.querySelector('#productTitle')?.innerText.trim() || 'Title not found';
-            const price = document.querySelector('.a-price .a-offscreen')?.innerText.replace(/[^0-9.]/g, '') || '0';
+            let price = document.querySelector('.a-price .a-offscreen')?.innerText.replace(/[^0-9.]/g, '') || '0';
+            
+            // Skip if price is 0
+            if (parseFloat(price) === 0) return null;
+
             const addToCartBtn = document.querySelector('#add-to-cart-button');
             const availability = addToCartBtn ? 'In Stock' : 'Out of Stock';
             const sellerElement = document.querySelector('#sellerProfileTriggerId') || document.querySelector('.tabular-buybox-text a');
@@ -68,6 +77,8 @@ const scrapeAmazonProduct = async (asin, page) => {
                 fulfillmentMethod = shipFromValue.includes("Amazon") ? "FBA" : "FBM";
             }
 
+            const sellerStatus = allowedSellers.includes(sellerName) ? "approved" : "unapproved";
+            
             return {
                 title,
                 sellersInfo: [{
@@ -75,11 +86,27 @@ const scrapeAmazonProduct = async (asin, page) => {
                     price,
                     availability,
                     deliveryTime,
-                    fulfillmentMethod,
-                    sellerStatus: allowedSellers.includes(sellerName) ? "approved" : "unapproved"
+                    fulfillmentMethod, 
+                    sellerStatus: sellerStatus
                 }]
             };
         }, allowedSellers);
+
+        if (!productData) {
+            console.log(`Skipping ASIN ${asin} due to price 0`);
+            return { title: 'Skipped (Price 0)', sellersInfo: [] };
+        }
+
+        await insertProduct(
+            asin,  
+            productData.sellersInfo[0].sellerName, 
+            productData.title, 
+            productData.sellersInfo[0].price, 
+            productData.sellersInfo[0].availability, 
+            productData.sellersInfo[0].deliveryTime, 
+            productData.sellersInfo[0].fulfillmentMethod, 
+            productData.sellersInfo[0].sellerStatus
+        );
 
         // Now scrape other sellers
         const sellersUrl = `https://www.amazon.in/dp/${asin}/ref=olp-opf-redir?aod=1&ie=UTF8&condition=NEW`;
@@ -92,49 +119,74 @@ const scrapeAmazonProduct = async (asin, page) => {
 
             sellerRows.forEach(row => {
                 const sellerName = row.querySelector('#aod-offer-soldBy a')?.innerText.trim() || 'Unknown Seller';
-                const price = row.querySelector('.a-price .a-offscreen')?.innerText.replace(/[^0-9.]/g, '') || '0';
+                let price = row.querySelector('.a-price .a-offscreen')?.innerText.replace(/[^0-9.]/g, '') || '0';
+                
+                // Skip sellers with price 0
+                if (parseFloat(price) === 0) return;
+
                 const shipFromElement = row.querySelector('#aod-offer-shipsFrom span');
-                const fulfillmentText = shipFromElement ? shipFromElement.innerText.trim() : 'Unknown';
+                const fulfillmentText = shipFromElement ? shipFromElement.innerText.trim() : 'Unknown'; 
 
-                let fulfillmentMethod = fulfillmentText.includes("Amazon") ? "FBA" : "FBM";
+                let fulfillmentMethod = fulfillmentText.includes("Amazon") ? "FBA" : "FBM"; 
 
-                const addToCartBtn = row.querySelector('.AodAddToCart');
-                const availability = addToCartBtn ? 'In Stock' : 'Out of Stock';
+                const addToCartBtn = row.querySelector('[name="submit.addToCart"]');      
+                const availability = addToCartBtn ? 'In Stock' : 'Out of Stock';    
 
-                const deliveryElement = row.querySelector('#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE span') || row.querySelector('.a-text-bold + span');
+                const deliveryElement = row.querySelector('.a-text-bold + span');  
                 const deliveryTime = deliveryElement?.innerText.trim() || 'Delivery info not found';
-
-                sellersList.push({ 
-                    sellerName, 
-                    price, 
-                    availability, 
-                    deliveryTime, 
-                    fulfillmentMethod, 
-                    sellerStatus: allowedSellers.includes(sellerName) ? "approved" : "unapproved"
-                });
-            });
+                
+                const sellerStatus = allowedSellers.includes(sellerName) ? "approved" : "unapproved";
+                
+                sellersList.push({  
+                    sellerName,     
+                    price,     
+                    availability,      
+                    deliveryTime,     
+                    fulfillmentMethod,      
+                    sellerStatus: sellerStatus  
+                });        
+            });  
 
             return sellersList;
-        }, allowedSellers);
+        }, allowedSellers); 
 
-        // Append more sellers to the data
+        for (const seller of moreSellers) {
+            await insertProduct(
+                asin, 
+                seller.sellerName,    
+                productData.title, // Use the same title for all sellers
+                seller.price, 
+                seller.availability, 
+                seller.deliveryTime, 
+                seller.fulfillmentMethod, 
+                seller.sellerStatus 
+            );
+        }
+        
         productData.sellersInfo.push(...moreSellers);
 
         // Check for unapproved sellers  
-        if (productData.sellersInfo.some(seller => seller.sellerStatus === "unapproved")) {
-            unapprovedASINs.push({ asin, title: productData.title }); 
-        }
+        if (productData.sellersInfo.some(seller => seller.sellerStatus === "unapproved")) 
+        {
+            const isAlertSent = await isAlertEmailSent(asin); 
 
+            if (!isAlertSent) { 
+                unapprovedASINs.push({ asin, title: productData.title });
+                await changeEmailSentStatus(asin);
+            }
+        }     
+        console.log(unapprovedASINs);  
         return productData;
     } catch (error) {
         console.error(`❌ Error scraping ASIN: ${asin} - ${error.message}`);
         return { title: 'Error', sellersInfo: [] };
     }
-};
+};  
+
 
 
 const sendEmail = async () => {
-    if (unapprovedASINs.length === 0) {
+    if (unapprovedASINs.length === 0) {  
         console.log("✅ No unapproved sellers detected. No email sent.");
         return;
     }
@@ -142,19 +194,19 @@ const sendEmail = async () => {
     console.log("📧 Sending email for unapproved ASINs...");
 
     const transporter = nodemailer.createTransport({
-        service: "gmail", // Change if using another email service
+        service: "gmail", 
         auth: {
             user: gmailAppUser,
             pass: gmailAppPass  
         }
     });
 
-    const emailBody = unapprovedASINs.map(item => `ASIN: ${item.asin} - ${item.title}`).join("\n");
+    //const emailBody = unapprovedASINs.map(item => `ASIN: ${item.asin} - ${item.title}`).join("\n");
 
-    const mailOptions = {
+    const mailOptions = { 
         from: gmailAppUser,
-        //to: to_email.join(","),  
-        to: "goldenbeast256@gmail.com", 
+        to: to_email.join(","),    
+        //to: "goldenbeast256@gmail.com",  
         subject: "🚨 Alert: Unapproved Sellers Detected on Amazon",
         html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px; margin: auto; background: #f9f9f9;">
@@ -200,42 +252,43 @@ const sendEmail = async () => {
 
 
 (async () => {
-    const asins = loadASINs('ASINs.xlsx');
-    const existingData = loadExistingData('output.xlsx');
-    const browser = await puppeteer.launch({ headless: false });
+    //const asins = loadASINs('ASINs1.xlsx');
+    const asinsData = await getAllAsins(limit);  
+    const asins = asinsData.map(row => row.asin);        
+    //const existingData = loadExistingData('output.xlsx');
+    const browser = await puppeteer.launch({ headless: true }); 
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36');
 
-    const results = [];
+    //const results = [];
 
     for (const asin of asins) {
         const productData = await scrapeAmazonProduct(asin, page);
 
-        const oldPrice = existingData[asin]?.newPrice || '0';
-        const priceDiff = productData.sellersInfo.length > 0
-            ? (parseFloat(productData.sellersInfo[0].price) - parseFloat(oldPrice)).toFixed(2)
-            : '0';
-        console.log(productData);   
-        results.push({
-            ASIN: asin,
-            title: productData.title,
-            oldPrice,
-            newPrice: productData.sellersInfo.length > 0 ? productData.sellersInfo[0].price : '0',
-            priceDiff: priceDiff !== 'NaN' ? (priceDiff > 0 ? `+${priceDiff}` : priceDiff) : '0',
-            sellersInfo: productData.sellersInfo
-        });
+        // const oldPrice = existingData[asin]?.newPrice || '0';
+        // const priceDiff = productData.sellersInfo.length > 0
+        //     ? (parseFloat(productData.sellersInfo[0].price) - parseFloat(oldPrice)).toFixed(2)
+        //     : '0';
+        console.log(productData);    
+        // results.push({
+        //     ASIN: asin,
+        //     title: productData.title,
+        //     oldPrice,
+        //     newPrice: productData.sellersInfo.length > 0 ? productData.sellersInfo[0].price : '0',
+        //     priceDiff: priceDiff !== 'NaN' ? (priceDiff > 0 ? `+${priceDiff}` : priceDiff) : '0',
+        //     sellersInfo: productData.sellersInfo
+        // });
 
-        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000));
+        await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000)); 
     }
 
     await browser.close(); 
     await sendEmail(); // Send email at the end  
 
-    const newSheet = XLSX.utils.json_to_sheet(results);
-    const newWorkbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(newWorkbook, newSheet, 'Results');
-    XLSX.writeFile(newWorkbook, 'output.xlsx');
+    // const newSheet = XLSX.utils.json_to_sheet(results);
+    // const newWorkbook = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(newWorkbook, newSheet, 'Results');
+    // XLSX.writeFile(newWorkbook, 'output.xlsx'); 
 
-    console.log('✅ Scraping complete! Results saved to output.xlsx');      
+    //console.log('✅ Scraping complete! Results saved to output.xlsx');      
 })();
-

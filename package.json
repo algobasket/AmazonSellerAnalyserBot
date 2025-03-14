@@ -1,16 +1,17 @@
 {
-    "name": "Amazon-Seller-Analyser-Bot",
+    "name": "keepa-price-tracker",
     "version": "1.0.0",
-    "description": "Amazon Seller Analyser Bot",
-    "main": "run.mjs", 
+    "description": "A Keepa price tracker that reads ASINs from an Excel file and sends email alerts for price drops.",
+    "main": "index.js",
     "type": "module",
     "scripts": {
-        "start": "node run.mjs"  
+        "start": "node index.js"
     },
     "dependencies": {
         "axios": "^1.8.2",
         "dotenv": "^16.4.7",
         "ejs": "^3.1.10",
+        "mysql2": "^3.13.0",
         "node-fetch": "^3.3.2",
         "nodemailer": "^6.10.0",
         "nodemon": "^3.1.9",
