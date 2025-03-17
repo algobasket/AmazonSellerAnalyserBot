@@ -4,9 +4,9 @@ import mysql from 'mysql2';
 // Create a MySQL single connection
 export const connection = mysql.createConnection({
   host: 'localhost',  // Replace with your MySQL host
-  user: 'root',       // Replace with your MySQL username
-  password: '',       // Replace with your MySQL password
-  database: 'amazon-seller-analyser-bot'  // Replace with your database name  
+  user: 'kffqdvqmer',       // Replace with your MySQL username
+  password: 'QdRhZ4fRT3',       // Replace with your MySQL password
+  database: 'kffqdvqmer'  // Replace with your database name  
 });  
 
 // Connect to the database 
@@ -21,9 +21,9 @@ connection.connect((err) => {
 // Create a MySQL connection pool for better scalability
 export const pool = mysql.createPool({
   host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'amazon-seller-analyser-bot',  
+  user: 'kffqdvqmer',
+  password: 'QdRhZ4fRT3', 
+  database: 'kffqdvqmer',    
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

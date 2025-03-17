@@ -1,0 +1,328 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.0
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Mar 14, 2025 at 10:11 AM
+-- Server version: 10.4.24-MariaDB
+-- PHP Version: 8.1.6
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `amazon-seller-analyser-bot`
+--
+CREATE DATABASE IF NOT EXISTS `amazon-seller-analyser-bot` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `amazon-seller-analyser-bot`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alert`
+--
+
+DROP TABLE IF EXISTS `alert`;
+CREATE TABLE `alert` (
+  `id` int(11) NOT NULL,
+  `asin` varchar(50) NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
+  `status` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- RELATIONSHIPS FOR TABLE `alert`:
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `asins`
+--
+
+DROP TABLE IF EXISTS `asins`;
+CREATE TABLE `asins` (
+  `id` int(11) NOT NULL,
+  `asin` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- RELATIONSHIPS FOR TABLE `asins`:
+--
+
+--
+-- Dumping data for table `asins`
+--
+
+INSERT INTO `asins` (`id`, `asin`) VALUES
+(75, 'B00005U21K'),
+(78, 'B00006HZ6D'),
+(43, 'B0000AXNNA'),
+(44, 'B0000AZ8LA'),
+(77, 'B0000D8IX9'),
+(80, 'B0001AC2P0'),
+(79, 'B0002CUA6K'),
+(16, 'B0006Q50ZS'),
+(18, 'B0006Q5102'),
+(41, 'B000BW4IFA'),
+(8, 'B000BWGBZK'),
+(6, 'B000BWMYKG'),
+(183, 'B000CN77TM'),
+(45, 'B000EDUTMC'),
+(164, 'B000GHQBUA'),
+(67, 'B000HT8U9M'),
+(102, 'B000I05TLW'),
+(37, 'B000JC1S00'),
+(167, 'B000JIJI9M'),
+(10, 'B000KEK16E'),
+(42, 'B000LC87V6'),
+(160, 'B000MLBCWM'),
+(12, 'B000PFQMUW'),
+(133, 'B000UUMX0K'),
+(17, 'B000V5HDKY'),
+(57, 'B000X1WRHK'),
+(5, 'B0013JGGAK'),
+(128, 'B00169OGX6'),
+(76, 'B0016HIMTC'),
+(1, 'B0017RYAGU'),
+(3, 'B0017VU1QO'),
+(175, 'B0018D63KO'),
+(176, 'B0018D84YC'),
+(130, 'B001BS3YQM'),
+(9, 'B001MZWULO'),
+(131, 'B001OPLJUU'),
+(111, 'B002E6X1L8'),
+(165, 'B002QG1W6W'),
+(46, 'B002QH5CO4'),
+(112, 'B0035LVWN0'),
+(47, 'B003BZD03K'),
+(94, 'B003EME7MI'),
+(48, 'B003VARIII'),
+(85, 'B004S4XNEO'),
+(84, 'B004S55KZ8'),
+(49, 'B004XBMVFO'),
+(38, 'B005IQS6P2'),
+(50, 'B005ZFUKCI'),
+(66, 'B006315TME'),
+(122, 'B0068C5X56'),
+(99, 'B00694Q55K'),
+(145, 'B006ERSWOO'),
+(83, 'B0072L5P6Y'),
+(144, 'B007ICY7XE'),
+(14, 'B0080IP9XM'),
+(162, 'B009DJCQIS'),
+(169, 'B00AT1TF10'),
+(118, 'B00AU67NEA'),
+(132, 'B00AU67NY0'),
+(81, 'B00BPZ395M'),
+(87, 'B00D7A7QHU'),
+(161, 'B00D7NZCDW'),
+(146, 'B00DG60C8U'),
+(115, 'B00DJWFDQW'),
+(107, 'B00EJW1414'),
+(184, 'B00F0C2LBO'),
+(117, 'B00HGSO1W2'),
+(40, 'B00HR8BFXO'),
+(86, 'B00HZIN958'),
+(134, 'B00I77PLNE'),
+(92, 'B00I8NJM5K'),
+(148, 'B00IMF1DNI'),
+(19, 'B00IUIDFSS'),
+(93, 'B00IVEHFNC'),
+(88, 'B00IVEIB0S'),
+(89, 'B00IVEIB1W'),
+(56, 'B00JBYNFCQ'),
+(31, 'B00JBYNFL2'),
+(7, 'B00KACMY8O'),
+(139, 'B00KCS5PF0'),
+(123, 'B00KCS5SNY'),
+(51, 'B00KO61DI8'),
+(97, 'B00NG38QW2'),
+(52, 'B00OS6T1I4'),
+(108, 'B00TIZQK9S'),
+(2, 'B00VB5FU9Y'),
+(149, 'B00VOBMV3S'),
+(64, 'B011DKBXBK'),
+(168, 'B011JHFIC2'),
+(171, 'B012J1CLVS'),
+(127, 'B01AALXG4A'),
+(109, 'B01BL57KCI'),
+(104, 'B01C0J7MFY'),
+(103, 'B01C0J7MTU'),
+(140, 'B01C0J7QZK'),
+(11, 'B01CDE8BU6'),
+(95, 'B01CX4U7OY'),
+(136, 'B01DAF51ZU'),
+(129, 'B01DAZTSEA'),
+(159, 'B01GTAE6BI'),
+(53, 'B01HFIE7QC'),
+(26, 'B01HYIEXH6'),
+(54, 'B01IWCP7XC'),
+(34, 'B01LDFIEHQ'),
+(170, 'B01LXDFCO9'),
+(74, 'B01N9C5RP0'),
+(181, 'B01N9K5GKO'),
+(147, 'B06XCR1XP6'),
+(177, 'B06Y4BT184'),
+(82, 'B0742N1Y6S'),
+(101, 'B074QY86KX'),
+(100, 'B074QYRDG4'),
+(106, 'B074QZH1CS'),
+(113, 'B075ZQZX3Y'),
+(172, 'B078B1HHXN'),
+(32, 'B0791CDHS1'),
+(124, 'B079VT4RDN'),
+(150, 'B07CJSY5B7'),
+(110, 'B07CTFS7BQ'),
+(141, 'B07DNT7464'),
+(98, 'B07DPVQP2G'),
+(23, 'B07F2WF96Y'),
+(182, 'B07GSFZVQT'),
+(33, 'B07H83C61Y'),
+(178, 'B07HZ1T3WK'),
+(105, 'B07JQBLRGQ'),
+(35, 'B07KZYNG76'),
+(55, 'B07L6SLX7H'),
+(138, 'B07M9FPFRK'),
+(174, 'B07N1TH8JF'),
+(114, 'B07N1X7HJB'),
+(96, 'B07NCKFJGK'),
+(119, 'B07NFQ21VZ'),
+(143, 'B07PM9QTPD'),
+(125, 'B07PMJ2K95'),
+(39, 'B07PYTDC9K'),
+(27, 'B07RTKNGXR'),
+(120, 'B07VCGPX84'),
+(135, 'B07VLJPLK9'),
+(179, 'B07WHKCZJR'),
+(58, 'B07Y9251Q9'),
+(59, 'B07Y925Z8T'),
+(15, 'B0856QDLMH'),
+(13, 'B08575VW6W'),
+(90, 'B08JXC1F22'),
+(137, 'B08LQZH4HR'),
+(22, 'B08R9MG5JM'),
+(21, 'B08V8Q2WH4'),
+(4, 'B08VZSZ1VM'),
+(20, 'B08ZH9T8C7'),
+(25, 'B08ZHWHKPP'),
+(29, 'B096N51YDV'),
+(30, 'B096N6K13W'),
+(36, 'B0977R5TQG'),
+(163, 'B09BHFWMFM'),
+(61, 'B09RGBD8BQ'),
+(142, 'B09TN7SJQ7'),
+(91, 'B09XXZ8WPL'),
+(62, 'B09YMFLHD5'),
+(173, 'B0B5B34PKW'),
+(63, 'B0BHZL5CB6'),
+(126, 'B0BJLJJZS1'),
+(166, 'B0BRTCLYCP'),
+(121, 'B0BWNPLBP9'),
+(180, 'B0BXZ91QTS'),
+(116, 'B0C7D4L47R'),
+(24, 'B0CNRW6J36'),
+(28, 'B0CNRYHYQ3'),
+(65, 'B0CQTHJZJL'),
+(68, 'B0CX8TT2JL'),
+(69, 'B0CX93VLMY'),
+(71, 'B0CX95MGFL'),
+(70, 'B0CX965S4F'),
+(72, 'B0CX9784SL'),
+(156, 'B0CXDG5DTS'),
+(153, 'B0CXDJKDZK'),
+(154, 'B0CXDQM14X'),
+(152, 'B0CXDR75ZW'),
+(151, 'B0CXDXNLH8'),
+(157, 'B0CXDY6PJ9'),
+(155, 'B0CXDZGM6B'),
+(158, 'B0CXF3GZRM'),
+(73, 'B0CXVCLQ9L'),
+(60, 'B0CZ98TSCY');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `output`
+--
+
+DROP TABLE IF EXISTS `output`;
+CREATE TABLE `output` (
+  `id` int(11) NOT NULL,
+  `asin` varchar(50) NOT NULL,
+  `seller` varchar(100) NOT NULL,
+  `title` longtext NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `price_change` decimal(10,2) DEFAULT 0.00,
+  `availability` varchar(50) NOT NULL,
+  `delivery_time` varchar(50) NOT NULL,
+  `fulfillment_method` varchar(50) NOT NULL,
+  `seller_status` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- RELATIONSHIPS FOR TABLE `output`:
+--
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `alert`
+--
+ALTER TABLE `alert`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `asin` (`asin`);
+
+--
+-- Indexes for table `asins`
+--
+ALTER TABLE `asins`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `asin_2` (`asin`),
+  ADD KEY `asin` (`asin`);
+
+--
+-- Indexes for table `output`
+--
+ALTER TABLE `output`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_asin_seller` (`asin`,`seller`),
+  ADD KEY `asin` (`asin`),
+  ADD KEY `seller` (`seller`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `alert`
+--
+ALTER TABLE `alert`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+
+--
+-- AUTO_INCREMENT for table `asins`
+--
+ALTER TABLE `asins`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=185;
+
+--
+-- AUTO_INCREMENT for table `output`
+--
+ALTER TABLE `output`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
